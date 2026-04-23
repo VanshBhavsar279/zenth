@@ -7,11 +7,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1800&q=80',
   'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1800&q=80',
   'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1800&q=80',
   'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1800&q=80',
   'https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1709940936001-49ac064254fc?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1713974464381-9b954c5acfbf?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1708201596932-595638a910ee?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1661110546798-74f41273fbc7?auto=format&fit=crop&w=1800&q=80',
 ];
 
 export function Hero() {
