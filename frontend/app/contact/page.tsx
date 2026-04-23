@@ -42,7 +42,7 @@ function sanitizeRichHtml(input: string): string {
         return;
       }
 
-      [...el.attributes].forEach((attr) => {
+      Array.from(el.attributes).forEach((attr) => {
         const name = attr.name.toLowerCase();
         if (name.startsWith('on') || name === 'style') {
           el.removeAttribute(attr.name);
@@ -60,7 +60,7 @@ function sanitizeRichHtml(input: string): string {
         }
       }
     }
-    [...node.childNodes].forEach(sanitizeNode);
+    Array.from(node.childNodes).forEach(sanitizeNode);
   };
 
   sanitizeNode(doc.body);
