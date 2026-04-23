@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #0a0a0a;
+  --color-secondary: #e8ff00;
+  --color-accent: #ffffff;
+  --color-surface: #111111;
+  --color-muted: #888888;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-primary text-accent font-sans antialiased;
+}
+
+.font-display {
+  font-family: var(--font-bebas), sans-serif;
+}
+
+/* Grain overlay utility */
+.grain-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Glitch headline */
+@keyframes glitch-shift {
+  0% {
+    transform: translate(0);
+    text-shadow:
+      2px 0 var(--color-secondary),
+      -2px 0 #fff;
+  }
+  20% {
+    transform: translate(-2px, 1px);
+    text-shadow:
+      -2px 0 var(--color-secondary),
+      2px 0 #fff;
+  }
+  40% {
+    transform: translate(2px, -1px);
+    text-shadow:
+      2px 0 #fff,
+      -2px 0 var(--color-secondary);
+  }
+  60% {
+    transform: translate(-1px, -1px);
+  }
+  80% {
+    transform: translate(1px, 2px);
+  }
+  100% {
+    transform: translate(0);
+    text-shadow:
+      2px 0 var(--color-secondary),
+      -2px 0 #fff;
+  }
+}
+
+.glitch-text {
+  animation: glitch-shift 3s infinite linear alternate-reverse;
+}
+
+/* Marquee */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    #1a1a1a 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+/* Hide scrollbar but keep scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
