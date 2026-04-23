@@ -14,15 +14,11 @@ const categories: ProductCategory[] = [
   'Coloured',
 ];
 
-const sizesList = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-
 export function ProductsClient() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') as ProductCategory | null;
 
   const [category, setCategory] = useState<ProductCategory | ''>(initialCategory || '');
-  const [sizes, setSizes] = useState<string[]>([]);
-  const [colors, setColors] = useState<string[]>([]);
   const [sort, setSort] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
@@ -31,25 +27,13 @@ export function ProductsClient() {
   const filters = useMemo(() => {
     const f: Record<string, string | string[]> = {};
     if (category) f.category = category;
-    if (sizes.length) f.size = sizes;
-    if (colors.length) f.color = colors;
     if (minPrice) f.minPrice = minPrice;
     if (maxPrice) f.maxPrice = maxPrice;
     f.sort = sort;
     return f;
-  }, [category, sizes, colors, minPrice, maxPrice, sort]);
+  }, [category, minPrice, maxPrice, sort]);
 
   const { data, loading, error } = useProducts(filters);
-
-  const toggleSize = (s: string) => {
-    setSizes((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
-  };
-
-  const toggleColorParam = (hex: string) => {
-    setColors((prev) => (prev.includes(hex) ? prev.filter((x) => x !== hex) : [...prev, hex]));
-  };
-
-  const presetColors = ['#0A0A0A', '#FFFFFF', '#E8FF00', '#2563EB', '#DC2626'];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 md:py-24">
@@ -83,44 +67,6 @@ export function ProductsClient() {
                 >
                   {c}
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Size</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {sizesList.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => toggleSize(s)}
-                  className={`rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-widest ${
-                    sizes.includes(s)
-                      ? 'bg-secondary text-primary'
-                      : 'bg-surface text-muted ring-1 ring-white/10'
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Color</p>
-            <div className="mt-3 flex flex-wrap gap-3">
-              {presetColors.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  title={hex}
-                  onClick={() => toggleColorParam(hex)}
-                  className={`h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-primary ${
-                    colors.includes(hex) ? 'ring-secondary' : 'ring-transparent'
-                  }`}
-                  style={{ backgroundColor: hex }}
-                />
               ))}
             </div>
           </div>

@@ -70,7 +70,9 @@ router.patch(
   authMiddleware,
   param('id').isMongoId(),
   body('colorId').isString().trim().notEmpty(),
-  body('stock').isInt({ min: 0 }),
+  body('size').optional().isString().trim().notEmpty(),
+  body('stock').optional().isInt({ min: 0 }),
+  body('delta').optional().isInt(),
   validate,
   patchStock
 );

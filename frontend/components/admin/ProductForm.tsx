@@ -116,6 +116,10 @@ export function ProductForm({
     }
     const cleanColors = colors.map(({ clientKey: _unused, ...rest }) => ({
       ...rest,
+      sizeStock:
+        Array.isArray(rest.sizeStock) && rest.sizeStock.length > 0
+          ? rest.sizeStock
+          : [{ size: sizes[0] || 'ONE SIZE', stock: Number(rest.stock || 0) }],
       images: (rest.images || []).filter(Boolean),
     }));
 

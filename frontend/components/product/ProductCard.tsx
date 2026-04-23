@@ -7,7 +7,7 @@ import { useState } from 'react';
 import Tilt from 'react-parallax-tilt';
 import { Badge } from '@/components/ui/Badge';
 import type { Product } from '@/lib/types';
-import { formatPriceINR, isProductOutOfStock, productSecondImage } from '@/lib/utils';
+import { formatPriceINR, getColorStock, isProductOutOfStock, productSecondImage } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export function ProductCard({ product, className }: { product: Product; className?: string }) {
@@ -116,7 +116,7 @@ export function ProductCard({ product, className }: { product: Product; classNam
                   onMouseEnter={() => setHoverColor(idx)}
                   onMouseLeave={() => setHoverColor(null)}
                 >
-                  {(c.stock ?? 0) <= 0 && (
+                  {getColorStock(c) <= 0 && (
                     <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
                       ×
                     </span>

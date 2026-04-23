@@ -37,9 +37,28 @@ export function productSecondImage(product: Product, colorIdx: number): string |
 
 export function isProductOutOfStock(product: Product): boolean {
   if (!product.colors?.length) return true;
-  return product.colors.every((c) => (c.stock ?? 0) <= 0);
+  return product.colors.every((c) => getColorStock(c) <= 0);
 }
 
 export function encodeWhatsAppMessage(text: string): string {
   return encodeURIComponent(text);
+}
+
+export function getColorStock(color: Product['colors'][number]): number {
+  if (Array.isArray(color.sizeStock) && color.sizeStock.length > 0) {
+    return color.sizeStock.reduce((sum, row) => sum + Number(row.stock || 0), 0);
+  }
+  return Number(color.stock || 0);
+}
+
+export function getColorSizeStock(
+  color: Product['colors'][number],
+  size: string | null | undefined
+): number {
+  if (!size) return getColorStock(color);
+  if (Array.isArray(color.sizeStock) && color.sizeStock.length > 0) {
+    const row = color.sizeStock.find((r) => r.size === size);
+    return Number(row?.stock || 0);
+  }
+  return Number(color.stock || 0);
 }

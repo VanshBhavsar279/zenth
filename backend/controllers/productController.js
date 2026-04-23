@@ -1,5 +1,21 @@
 import Product from '../models/Product.js';
 
+const normalizeColorStocks = (product) => {
+  if (!product?.colors?.length) return;
+  product.colors.forEach((color) => {
+    if (Array.isArray(color.sizeStock) && color.sizeStock.length > 0) {
+      color.stock = color.sizeStock.reduce((sum, row) => sum + Number(row.stock || 0), 0);
+      return;
+    }
+    // Backward compatibility: migrate legacy color.stock to sizeStock.
+    if (Array.isArray(product.sizes) && product.sizes.length > 0) {
+      color.sizeStock = [{ size: product.sizes[0], stock: Number(color.stock || 0) }];
+    } else {
+      color.sizeStock = [{ size: 'ONE SIZE', stock: Number(color.stock || 0) }];
+    }
+  });
+};
+
 const buildProductFilter = (query, { includeHidden = false } = {}) => {
   const filter = {};
 
@@ -103,7 +119,9 @@ export const getProductById = async (req, res, next) => {
 
 export const createProduct = async (req, res, next) => {
   try {
-    const product = await Product.create(req.body);
+    const product = new Product(req.body);
+    normalizeColorStocks(product);
+    await product.save();
     res.status(201).json(product);
   } catch (err) {
     next(err);
@@ -112,11 +130,11 @@ export const createProduct = async (req, res, next) => {
 
 export const updateProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    Object.assign(product, req.body);
+    normalizeColorStocks(product);
+    await product.save();
     res.json(product);
   } catch (err) {
     next(err);
@@ -135,13 +153,34 @@ export const deleteProduct = async (req, res, next) => {
 
 export const patchStock = async (req, res, next) => {
   try {
-    const { colorId, stock } = req.body;
+    const { colorId, size, stock, delta } = req.body;
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
     const variant = product.colors.id(colorId);
     if (!variant) return res.status(404).json({ message: 'Color variant not found' });
-    variant.stock = Number(stock);
+
+    if (size) {
+      if (!Array.isArray(variant.sizeStock)) variant.sizeStock = [];
+      const row = variant.sizeStock.find((s) => s.size === size);
+      if (row) {
+        if (delta !== undefined) {
+          row.stock = Math.max(0, Number(row.stock || 0) + Number(delta));
+        } else {
+          row.stock = Math.max(0, Number(stock || 0));
+        }
+      } else {
+        variant.sizeStock.push({
+          size,
+          stock: Math.max(0, delta !== undefined ? Number(delta) : Number(stock || 0)),
+        });
+      }
+      variant.stock = variant.sizeStock.reduce((sum, s) => sum + Number(s.stock || 0), 0);
+    } else {
+      variant.stock = Math.max(0, Number(stock || 0));
+      variant.sizeStock = [{ size: product.sizes?.[0] || 'ONE SIZE', stock: variant.stock }];
+    }
+
     await product.save();
     res.json(product);
   } catch (err) {

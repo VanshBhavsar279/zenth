@@ -129,8 +129,9 @@ export default function ContactPage() {
               href={`https://wa.me/${data.whatsappNumber.replace(/\D/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-sm bg-secondary px-6 py-3 font-mono text-xs font-bold uppercase tracking-widest text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/90 px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-primary shadow-[0_8px_18px_rgba(232,255,0,0.2)] transition hover:-translate-y-0.5 hover:bg-secondary"
             >
+              <span aria-hidden>💬</span>
               WHATSAPP
             </a>
           )}

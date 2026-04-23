@@ -10,7 +10,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { SectionReveal } from '@/components/ui/SectionReveal';
 import { getContact, getProductById, getProducts } from '@/lib/api';
 import type { ContactInfo, Product } from '@/lib/types';
-import { formatPriceINR } from '@/lib/utils';
+import { formatPriceINR, getColorSizeStock, getColorStock } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export function ProductDetailClient({ id }: { id: string }) {
@@ -58,7 +58,8 @@ export function ProductDetailClient({ id }: { id: string }) {
   const images = useMemo(() => product?.colors[colorIdx]?.images ?? [], [product, colorIdx]);
 
   const selectedColor = product?.colors[colorIdx];
-  const stock = selectedColor?.stock ?? 0;
+  const stock = selectedColor ? getColorSizeStock(selectedColor, size) : 0;
+  const colorTotal = selectedColor ? getColorStock(selectedColor) : 0;
 
   const whatsappMessage =
     product && selectedColor && size
@@ -114,7 +115,7 @@ Please share availability and further details. Thanks!`
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">COLOR</p>
             <div className="mt-3 flex flex-wrap gap-3">
               {product.colors.map((c, idx) => {
-                const out = (c.stock ?? 0) <= 0;
+                const out = getColorStock(c) <= 0;
                 return (
                   <button
                     key={c._id ?? c.hex + idx}
@@ -139,7 +140,7 @@ Please share availability and further details. Thanks!`
             {selectedColor && (
               <p className="mt-2 font-mono text-xs uppercase tracking-widest text-muted">
                 {selectedColor.name}
-                {stock <= 0 && (
+                {colorTotal <= 0 && (
                   <span className="ml-2 text-red-400">OUT OF STOCK FOR THIS COLOR</span>
                 )}
               </p>
@@ -153,6 +154,15 @@ Please share availability and further details. Thanks!`
                 sizes={product.sizes?.length ? product.sizes : ['ONE SIZE']}
                 selected={size}
                 onChange={setSize}
+                disabledSizes={
+                  selectedColor
+                    ? new Set(
+                        (product.sizes?.length ? product.sizes : ['ONE SIZE']).filter(
+                          (s) => getColorSizeStock(selectedColor, s) <= 0
+                        )
+                      )
+                    : new Set<string>()
+                }
               />
             </div>
           </div>
@@ -168,7 +178,9 @@ Please share availability and further details. Thanks!`
             <WhatsAppButton phone={contact.whatsappNumber} message={whatsappMessage} />
           )}
           {stock <= 0 && (
-            <p className="font-mono text-xs uppercase text-red-400">CURRENT COLOR IS OUT OF STOCK — YOU CAN STILL REACH OUT.</p>
+            <p className="font-mono text-xs uppercase text-red-400">
+              CURRENT COLOR + SIZE IS OUT OF STOCK — YOU CAN STILL REACH OUT.
+            </p>
           )}
         </SectionReveal>
       </div>

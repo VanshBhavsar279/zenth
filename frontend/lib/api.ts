@@ -105,10 +105,16 @@ export async function deleteProduct(id: string) {
   return fetchJson<{ message: string }>(`/api/products/${id}`, { method: 'DELETE' });
 }
 
-export async function patchProductStock(id: string, colorId: string, stock: number) {
+export async function patchProductStock(
+  id: string,
+  colorId: string,
+  stock: number,
+  size?: string,
+  delta?: number
+) {
   return fetchJson<Product>(`/api/products/${id}/stock`, {
     method: 'PATCH',
-    body: JSON.stringify({ colorId, stock }),
+    body: JSON.stringify({ colorId, stock, size, delta }),
   });
 }
 

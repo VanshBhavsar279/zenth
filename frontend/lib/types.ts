@@ -9,6 +9,10 @@ export interface ColorVariant {
   hex: string;
   images: string[];
   stock: number;
+  sizeStock?: Array<{
+    size: string;
+    stock: number;
+  }>;
 }
 
 export interface Product {
