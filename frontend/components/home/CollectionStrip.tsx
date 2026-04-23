@@ -9,17 +9,17 @@ const categories: { name: ProductCategory; image: string }[] = [
   {
     name: 'Polo',
     image:
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000&q=80',
+      'https://plus.unsplash.com/premium_photo-1747645829954-9ec54a9a245d?auto=format&fit=crop&w=1000&q=80',
   },
   {
     name: 'Printed',
     image:
-      'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1627679482560-9258e05a4226?auto=format&fit=crop&w=1000&q=80',
   },
   {
     name: 'Coloured',
     image:
-      'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=80',
+      'https://images.unsplash.com/photo-1622132261637-a3688da471fd?auto=format&fit=crop&w=1000&q=80',
   },
 ];
 
