@@ -7,6 +7,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  restoreProduct,
   patchStock,
   toggleVisibility,
   toggleFeatured,
@@ -63,6 +64,14 @@ router.delete(
   param('id').isMongoId(),
   validate,
   deleteProduct
+);
+
+router.patch(
+  '/:id/restore',
+  authMiddleware,
+  param('id').isMongoId(),
+  validate,
+  restoreProduct
 );
 
 router.patch(

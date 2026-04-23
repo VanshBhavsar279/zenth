@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -38,23 +39,45 @@ export function Hero() {
         <div className="grain-overlay" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        <p className="font-mono text-xs uppercase tracking-[0.5em] text-secondary">ZENTH / 2026</p>
-        <h1 className="glitch-text font-display text-5xl uppercase leading-none text-accent sm:text-7xl md:text-8xl">
+      <motion.div
+        className="relative z-10 mx-auto max-w-5xl px-4 text-center"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
+        }}
+      >
+        <motion.p
+          variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
+          className="font-mono text-xs uppercase tracking-[0.5em] text-secondary"
+        >
+          ZENTH / 2026
+        </motion.p>
+        <motion.h1
+          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+          className="glitch-text font-display text-5xl uppercase leading-none text-accent sm:text-7xl md:text-8xl"
+        >
           DEFINE THE STREET
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl font-sans text-sm text-muted md:text-base">
+        </motion.h1>
+        <motion.p
+          variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
+          className="mx-auto mt-6 max-w-xl font-sans text-sm text-muted md:text-base"
+        >
           New Collection. Limited Drops. Zero Compromise.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        </motion.p>
+        <motion.div
+          variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+        >
           <Link href="/products" data-magnetic>
             <Button variant="primary">SHOP NOW</Button>
           </Link>
           <Button variant="outline" type="button" onClick={scrollStory}>
             OUR STORY
           </Button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

@@ -1,19 +1,29 @@
 import type { ContactInfo, Product, ProductCategory, ThemeSettings } from './types';
 
-const base = () => process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const base = () =>
+  (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').trim().replace(/\/+$/, '');
+
+const apiUrl = (path: string) => `${base()}${path}`;
 
 async function fetchJson<T>(
   path: string,
   options: RequestInit & { skipJson?: boolean } = {}
 ): Promise<T> {
-  const res = await fetch(`${base()}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(apiUrl(path), {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error(
+      `Cannot connect to API (${apiUrl(path)}). Check backend is running, NEXT_PUBLIC_API_URL is correct, and CORS allows your frontend URL.`
+    );
+  }
 
   if (!res.ok) {
     let msg = res.statusText;
@@ -105,6 +115,10 @@ export async function deleteProduct(id: string) {
   return fetchJson<{ message: string }>(`/api/products/${id}`, { method: 'DELETE' });
 }
 
+export async function restoreProduct(id: string) {
+  return fetchJson<Product>(`/api/products/${id}/restore`, { method: 'PATCH' });
+}
+
 export async function patchProductStock(
   id: string,
   colorId: string,
@@ -144,11 +158,18 @@ export async function updateContact(payload: Partial<ContactInfo>) {
 export async function uploadImage(file: File): Promise<{ url: string; publicId?: string }> {
   const form = new FormData();
   form.append('image', file);
-  const res = await fetch(`${base()}/api/upload`, {
-    method: 'POST',
-    credentials: 'include',
-    body: form,
-  });
+  let res: Response;
+  try {
+    res = await fetch(apiUrl('/api/upload'), {
+      method: 'POST',
+      credentials: 'include',
+      body: form,
+    });
+  } catch {
+    throw new Error(
+      `Cannot connect to API (${apiUrl('/api/upload')}). Check backend is running and CORS/env values are correct.`
+    );
+  }
   if (!res.ok) {
     const t = await res.text();
     throw new Error(t || 'Upload failed');

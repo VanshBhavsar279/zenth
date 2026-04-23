@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import {
@@ -25,6 +25,21 @@ function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function syncSizeStock(
+  sizeStock: Array<{ size: string; stock: number }> | undefined,
+  sizes: string[]
+) {
+  const activeSizes = sizes.length ? sizes : ['ONE SIZE'];
+  return activeSizes.map((size) => {
+    const existing = sizeStock?.find((s) => s.size === size);
+    return { size, stock: Number(existing?.stock ?? 0) };
+  });
+}
+
+function sumSizeStock(rows: Array<{ size: string; stock: number }> | undefined): number {
+  return (rows || []).reduce((sum, row) => sum + Number(row.stock || 0), 0);
+}
+
 export function ProductForm({
   initial,
   onSaved,
@@ -44,12 +59,17 @@ export function ProductForm({
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [isFeatured, setIsFeatured] = useState(initial?.isFeatured ?? false);
   const [isVisible, setIsVisible] = useState(initial?.isVisible ?? true);
+  const [activeNumberField, setActiveNumberField] = useState<string | null>(null);
   const [colors, setColors] = useState<DraftColor[]>(() =>
     initial?.colors?.length
       ? initial.colors.map((c) => ({
           ...c,
           clientKey: c._id ?? uid(),
           images: c.images ?? [],
+          sizeStock:
+            c.sizeStock && c.sizeStock.length > 0
+              ? c.sizeStock
+              : [{ size: initial?.sizes?.[0] || 'ONE SIZE', stock: Number(c.stock || 0) }],
         }))
       : [
           {
@@ -58,10 +78,21 @@ export function ProductForm({
             hex: '#0A0A0A',
             stock: 10,
             images: [],
+            sizeStock: [{ size: 'M', stock: 10 }],
           },
         ]
   );
   const [saving, setSaving] = useState(false);
+  const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+
+  useEffect(() => {
+    setColors((prev) =>
+      prev.map((c) => ({
+        ...c,
+        sizeStock: syncSizeStock(c.sizeStock, sizes),
+      }))
+    );
+  }, [sizes]);
 
   const toggleSize = (s: string) => {
     setSizes((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
@@ -75,6 +106,9 @@ export function ProductForm({
     setColors((prev) => prev.map((c) => (c.clientKey === key ? { ...c, ...patch } : c)));
   };
 
+  const getNumberFieldValue = (fieldKey: string, value: number) =>
+    activeNumberField === fieldKey && value === 0 ? '' : value;
+
   const addColor = () => {
     setColors((prev) => [
       ...prev,
@@ -84,12 +118,26 @@ export function ProductForm({
         hex: '#FFFFFF',
         stock: 0,
         images: [],
+        sizeStock: syncSizeStock([], sizes),
       },
     ]);
   };
 
   const removeColor = (key: string) => {
     setColors((prev) => prev.filter((c) => c.clientKey !== key));
+  };
+
+  const removeColorImage = (colorKey: string, imageIndex: number) => {
+    setColors((prev) =>
+      prev.map((color) =>
+        color.clientKey === colorKey
+          ? {
+              ...color,
+              images: (color.images || []).filter((_, idx) => idx !== imageIndex),
+            }
+          : color
+      )
+    );
   };
 
   const onUploadImages = async (key: string, files: FileList | null) => {
@@ -114,14 +162,25 @@ export function ProductForm({
       toast.error('NAME REQUIRED');
       return;
     }
-    const cleanColors = colors.map(({ clientKey: _unused, ...rest }) => ({
-      ...rest,
-      sizeStock:
-        Array.isArray(rest.sizeStock) && rest.sizeStock.length > 0
-          ? rest.sizeStock
-          : [{ size: sizes[0] || 'ONE SIZE', stock: Number(rest.stock || 0) }],
-      images: (rest.images || []).filter(Boolean),
-    }));
+    const cleanColors = colors.map(({ clientKey: _unused, ...rest }) => {
+      const normalizedSizeStock = syncSizeStock(rest.sizeStock, sizes);
+      return {
+        ...rest,
+        sizeStock: normalizedSizeStock,
+        stock: Number(rest.stock || 0),
+        images: (rest.images || []).filter(Boolean),
+      };
+    });
+
+    for (const color of cleanColors) {
+      const childrenTotal = sumSizeStock(color.sizeStock);
+      if (childrenTotal !== Number(color.stock || 0)) {
+        toast.error(
+          `QUANTITY MISMATCH FOR ${color.name.toUpperCase()}: CHILD TOTAL ${childrenTotal}, MAIN ${color.stock}`
+        );
+        return;
+      }
+    }
 
     const payload = {
       name,
@@ -186,9 +245,13 @@ export function ProductForm({
           <input
             type="number"
             min={0}
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-sm text-accent"
+            value={getNumberFieldValue('price', Number(price || 0))}
+            onFocus={() => setActiveNumberField('price')}
+            onBlur={() =>
+              setActiveNumberField((prev) => (prev === 'price' ? null : prev))
+            }
+            onChange={(e) => setPrice(e.target.value === '' ? 0 : Number(e.target.value))}
+            className="no-spinner w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-sm text-accent"
           />
         </label>
       </div>
@@ -274,8 +337,8 @@ export function ProductForm({
 
         {colors.map((c) => (
           <div key={c.clientKey} className="space-y-4 rounded-lg border border-white/10 bg-surface p-4">
-            <div className="flex flex-wrap items-end gap-4">
-              <label className="flex-1 space-y-2">
+            <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-[minmax(0,1fr)_120px_160px_40px]">
+              <label className="space-y-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
                   Color Name
                 </span>
@@ -287,27 +350,38 @@ export function ProductForm({
               </label>
               <label className="space-y-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                  Hex
+                  Color
                 </span>
-                <input
-                  type="color"
-                  value={c.hex}
-                  onChange={(e) => updateColor(c.clientKey, { hex: e.target.value })}
-                  className="h-10 w-14 cursor-pointer bg-transparent"
-                />
+                <div className="flex items-center">
+                  <input
+                    type="color"
+                    value={c.hex}
+                    onChange={(e) => updateColor(c.clientKey, { hex: e.target.value.toUpperCase() })}
+                    className="h-10 w-10 cursor-pointer appearance-none rounded-full border border-white/20 bg-transparent p-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0"
+                    aria-label="Pick color"
+                  />
+                </div>
               </label>
               <label className="space-y-2">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
-                  Stock
+                  Main Quantity
                 </span>
                 <input
                   type="number"
                   min={0}
-                  value={c.stock}
-                  onChange={(e) =>
-                    updateColor(c.clientKey, { stock: Number(e.target.value) })
+                  value={getNumberFieldValue(`${c.clientKey}::main`, Number(c.stock || 0))}
+                  onFocus={() => setActiveNumberField(`${c.clientKey}::main`)}
+                  onBlur={() =>
+                    setActiveNumberField((prev) =>
+                      prev === `${c.clientKey}::main` ? null : prev
+                    )
                   }
-                  className="w-28 rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-sm text-accent"
+                  onChange={(e) =>
+                    updateColor(c.clientKey, {
+                      stock: Math.max(0, e.target.value === '' ? 0 : Number(e.target.value)),
+                    })
+                  }
+                  className="no-spinner w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-sm text-accent"
                 />
               </label>
               <button
@@ -315,7 +389,7 @@ export function ProductForm({
                 onClick={() => removeColor(c.clientKey)}
                 aria-label="Remove color"
                 title="Remove color"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-red-400/40 text-red-400 transition hover:bg-red-500/10"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-sm text-red-400 transition hover:bg-red-500/10"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -340,20 +414,107 @@ export function ProductForm({
                 Images (drag files or browse)
               </p>
               <input
+                ref={(el) => {
+                  fileInputsRef.current[c.clientKey] = el;
+                }}
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={(e) => onUploadImages(c.clientKey, e.target.files)}
-                className="mt-2 block w-full font-mono text-[10px] text-muted file:mr-4 file:bg-secondary file:px-3 file:py-2 file:font-mono file:text-[10px] file:uppercase file:text-primary"
+                className="hidden"
               />
+              <div className="mt-2 flex items-center gap-3">
+                <Button
+                  type="button"
+                  onClick={() => fileInputsRef.current[c.clientKey]?.click()}
+                  className="px-4 py-2 text-[10px]"
+                >
+                  CHOOSE FILES
+                </Button>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                  Click button to select images
+                </span>
+              </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                {c.images?.map((src) => (
-                  <div key={src} className="relative h-20 w-16 overflow-hidden rounded-sm bg-black">
+                {c.images?.map((src, idx) => (
+                  <div
+                    key={`${src}-${idx}`}
+                    className="group relative h-20 w-16 overflow-hidden rounded-sm bg-black"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      aria-label="Remove image"
+                      title="Remove image"
+                      onClick={() => removeColorImage(c.clientKey, idx)}
+                      className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-black/75 text-white opacity-0 transition hover:bg-red-500 group-hover:opacity-100"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-3 w-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      >
+                        <path d="M6 6l12 12" />
+                        <path d="M18 6L6 18" />
+                      </svg>
+                    </button>
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                Quantity by Size
+              </p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                {syncSizeStock(c.sizeStock, sizes).map((row) => (
+                  <label
+                    key={`${c.clientKey}-${row.size}`}
+                    className="flex items-center justify-between gap-3 rounded-sm border border-white/10 bg-primary px-3 py-2"
+                  >
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
+                      {row.size}
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={getNumberFieldValue(
+                        `${c.clientKey}::${row.size}`,
+                        Number(row.stock || 0)
+                      )}
+                      onFocus={() => setActiveNumberField(`${c.clientKey}::${row.size}`)}
+                      onBlur={() =>
+                        setActiveNumberField((prev) =>
+                          prev === `${c.clientKey}::${row.size}` ? null : prev
+                        )
+                      }
+                      onChange={(e) => {
+                        const val = Math.max(0, e.target.value === '' ? 0 : Number(e.target.value));
+                        updateColor(c.clientKey, {
+                          sizeStock: syncSizeStock(c.sizeStock, sizes).map((s) =>
+                            s.size === row.size ? { ...s, stock: val } : s
+                          ),
+                        });
+                      }}
+                      className="no-spinner w-20 rounded-sm border border-white/10 bg-surface px-2 py-1 text-right font-mono text-xs text-accent"
+                    />
+                  </label>
+                ))}
+              </div>
+              <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted">
+                Child total: {sumSizeStock(syncSizeStock(c.sizeStock, sizes))} / Main:{' '}
+                {Number(c.stock || 0)}
+              </p>
+              {sumSizeStock(syncSizeStock(c.sizeStock, sizes)) !== Number(c.stock || 0) && (
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-red-400">
+                  CHILD SIZE QUANTITIES MUST EQUAL MAIN QUANTITY
+                </p>
+              )}
             </div>
           </div>
         ))}

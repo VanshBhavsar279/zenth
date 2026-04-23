@@ -1,23 +1,36 @@
 import Product from '../models/Product.js';
 
-const normalizeColorStocks = (product) => {
+const prepareAndValidateColorStocks = (product) => {
   if (!product?.colors?.length) return;
+  const activeSizes = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes : ['ONE SIZE'];
+
   product.colors.forEach((color) => {
-    if (Array.isArray(color.sizeStock) && color.sizeStock.length > 0) {
-      color.stock = color.sizeStock.reduce((sum, row) => sum + Number(row.stock || 0), 0);
-      return;
+    if (!Array.isArray(color.sizeStock) || color.sizeStock.length === 0) {
+      color.sizeStock = [{ size: activeSizes[0], stock: Number(color.stock || 0) }];
     }
-    // Backward compatibility: migrate legacy color.stock to sizeStock.
-    if (Array.isArray(product.sizes) && product.sizes.length > 0) {
-      color.sizeStock = [{ size: product.sizes[0], stock: Number(color.stock || 0) }];
-    } else {
-      color.sizeStock = [{ size: 'ONE SIZE', stock: Number(color.stock || 0) }];
+
+    color.sizeStock = activeSizes.map((size) => {
+      const existing = color.sizeStock.find((s) => s.size === size);
+      return {
+        size,
+        stock: Math.max(0, Number(existing?.stock || 0)),
+      };
+    });
+
+    const childrenTotal = color.sizeStock.reduce((sum, row) => sum + Number(row.stock || 0), 0);
+    const mainStock = Number(color.stock || 0);
+    if (childrenTotal !== mainStock) {
+      const err = new Error(
+        `Quantity mismatch for "${color.name}": main quantity (${mainStock}) must equal size total (${childrenTotal}).`
+      );
+      err.status = 400;
+      throw err;
     }
   });
 };
 
 const buildProductFilter = (query, { includeHidden = false } = {}) => {
-  const filter = {};
+  const filter = { isDeleted: { $ne: true } };
 
   if (!includeHidden) {
     filter.isVisible = true;
@@ -108,7 +121,7 @@ export const getProductById = async (req, res, next) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     const isAdmin = Boolean(req.admin);
-    if (!product.isVisible && !isAdmin) {
+    if ((product.isDeleted || !product.isVisible) && !isAdmin) {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json(product);
@@ -120,7 +133,7 @@ export const getProductById = async (req, res, next) => {
 export const createProduct = async (req, res, next) => {
   try {
     const product = new Product(req.body);
-    normalizeColorStocks(product);
+    prepareAndValidateColorStocks(product);
     await product.save();
     res.status(201).json(product);
   } catch (err) {
@@ -133,7 +146,7 @@ export const updateProduct = async (req, res, next) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
     Object.assign(product, req.body);
-    normalizeColorStocks(product);
+    prepareAndValidateColorStocks(product);
     await product.save();
     res.json(product);
   } catch (err) {
@@ -143,9 +156,28 @@ export const updateProduct = async (req, res, next) => {
 
 export const deleteProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json({ message: 'Deleted' });
+    if (product.isDeleted) return res.json({ message: 'Already deleted' });
+    product.isDeleted = true;
+    product.deletedAt = new Date();
+    product.isVisible = false;
+    await product.save();
+    res.json({ message: 'Soft deleted' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const restoreProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (!product.isDeleted) return res.json(product);
+    product.isDeleted = false;
+    product.deletedAt = null;
+    await product.save();
+    res.json(product);
   } catch (err) {
     next(err);
   }
@@ -192,6 +224,7 @@ export const toggleVisibility = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (product.isDeleted) return res.status(400).json({ message: 'Restore product before changing visibility' });
     product.isVisible = !product.isVisible;
     await product.save();
     res.json(product);
@@ -204,6 +237,7 @@ export const toggleFeatured = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (product.isDeleted) return res.status(400).json({ message: 'Restore product before changing featured' });
     product.isFeatured = !product.isFeatured;
     await product.save();
     res.json(product);

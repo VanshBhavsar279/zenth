@@ -47,7 +47,7 @@ export function Navbar() {
     <>
       <motion.header
         className={cn(
-          'fixed left-0 right-0 top-0 z-50 border-b transition-colors duration-300',
+          'fixed left-0 right-0 top-0 z-[140] border-b transition-colors duration-300',
           transparent ? 'border-transparent bg-transparent' : 'border-white/10 bg-primary/95 backdrop-blur-md'
         )}
       >
@@ -106,18 +106,21 @@ export function Navbar() {
           </button>
         </div>
 
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              className="fixed inset-0 z-[55] flex flex-col items-center justify-center gap-8 bg-primary/95 pt-24 backdrop-blur-sm md:hidden"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
+      </motion.header>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="fixed inset-0 z-[130] min-h-screen bg-primary md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="flex h-[100dvh] flex-col items-center justify-center gap-10 pt-14">
               {links.map((l, i) => (
                 <motion.div
                   key={l.href}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06 * i }}
                 >
@@ -130,10 +133,10 @@ export function Navbar() {
                   </Link>
                 </motion.div>
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

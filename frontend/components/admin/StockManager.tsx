@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/Button';
 import { patchProductStock } from '@/lib/api';
 import type { Product } from '@/lib/types';
 import { getColorSizeStock } from '@/lib/utils';
@@ -14,31 +13,7 @@ export function StockManager({
   product: Product;
   onUpdated: () => void;
 }) {
-  const [stockByKey, setStockByKey] = useState<Record<string, number>>(() => {
-    const m: Record<string, number> = {};
-    const sizes = product.sizes?.length ? product.sizes : ['ONE SIZE'];
-    product.colors.forEach((c) => {
-      sizes.forEach((s) => {
-        if (c._id) m[`${c._id}::${s}`] = getColorSizeStock(c, s);
-      });
-    });
-    return m;
-  });
   const [savingKey, setSavingKey] = useState<string | null>(null);
-
-  const save = async (colorId: string, size: string) => {
-    const key = `${colorId}::${size}`;
-    setSavingKey(key);
-    try {
-      await patchProductStock(product._id, colorId, stockByKey[key] ?? 0, size);
-      toast.success('STOCK UPDATED');
-      onUpdated();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'FAILED');
-    } finally {
-      setSavingKey(null);
-    }
-  };
 
   const adjust = async (colorId: string, size: string, delta: number) => {
     const key = `${colorId}::${size}`;
@@ -54,7 +29,20 @@ export function StockManager({
     }
   };
 
-  const sizes = product.sizes?.length ? product.sizes : ['ONE SIZE'];
+  const sizes = useMemo(
+    () => (product.sizes?.length ? product.sizes : ['ONE SIZE']),
+    [product.sizes]
+  );
+  const stockByKey = useMemo(() => {
+    const map: Record<string, number> = {};
+    product.colors.forEach((c) => {
+      if (!c._id) return;
+      sizes.forEach((size) => {
+        map[`${c._id}::${size}`] = getColorSizeStock(c, size);
+      });
+    });
+    return map;
+  }, [product, sizes]);
 
   return (
     <div className="mt-4 space-y-4 rounded-lg border border-white/10 bg-primary p-4">
@@ -68,6 +56,7 @@ export function StockManager({
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {sizes.map((size) => {
                 const key = `${c._id}::${size}`;
+                const stock = stockByKey[key] ?? 0;
                 return (
                   <div key={key} className="flex items-center gap-2 rounded border border-white/10 bg-surface p-2">
                     <span className="w-12 font-mono text-[10px] uppercase text-muted">{size}</span>
@@ -75,22 +64,13 @@ export function StockManager({
                       type="button"
                       className="h-7 w-7 rounded border border-white/15 text-accent"
                       onClick={() => adjust(c._id!, size, -1)}
-                      disabled={savingKey === key}
+                      disabled={savingKey === key || stock <= 0}
                     >
                       -
                     </button>
-                    <input
-                      type="number"
-                      min={0}
-                      value={stockByKey[key] ?? 0}
-                      onChange={(e) =>
-                        setStockByKey((prev) => ({
-                          ...prev,
-                          [key]: Math.max(0, Number(e.target.value)),
-                        }))
-                      }
-                      className="w-16 rounded-sm border border-white/10 bg-primary px-2 py-1 text-center font-mono text-xs text-accent"
-                    />
+                    <span className="inline-flex w-14 justify-center rounded-sm border border-white/10 bg-primary px-2 py-1 text-center font-mono text-xs text-accent">
+                      {stock}
+                    </span>
                     <button
                       type="button"
                       className="h-7 w-7 rounded border border-white/15 text-accent"
@@ -99,15 +79,6 @@ export function StockManager({
                     >
                       +
                     </button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="px-2 py-1 text-[10px]"
-                      disabled={savingKey === key}
-                      onClick={() => save(c._id!, size)}
-                    >
-                      SAVE
-                    </Button>
                   </div>
                 );
               })}

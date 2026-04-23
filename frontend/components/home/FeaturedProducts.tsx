@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/Button';
@@ -44,11 +45,28 @@ export function FeaturedProducts() {
               <p className="font-mono text-xs uppercase text-muted">No featured products yet.</p>
             )}
             {data && data.length > 0 && (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <motion.div
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: '-60px' }}
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: 0.08 } },
+                }}
+              >
                 {data.map((p) => (
-                  <ProductCard key={p._id} product={p} />
+                  <motion.div
+                    key={p._id}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+                    }}
+                  >
+                    <ProductCard product={p} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </ErrorBoundary>
         </div>

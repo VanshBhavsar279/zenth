@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/ui/SectionReveal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useContactInfo } from '@/lib/hooks/useContactInfo';
@@ -97,6 +99,7 @@ export default function ContactPage() {
 
   const ig = data.instagramHandle?.replace(/^@/, '') || '';
   const fb = data.facebookHandle || '';
+  const whatsappDigits = data.whatsappNumber?.replace(/\D/g, '') || '';
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 md:py-24">
@@ -107,63 +110,91 @@ export default function ContactPage() {
 
       <div className="mt-16 grid gap-12 lg:grid-cols-2">
         <SectionReveal className="space-y-8">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Brand</p>
-            <p className="mt-2 font-display text-4xl uppercase text-secondary">{data.brandName}</p>
-          </div>
-          {data.phone && (
-            <a href={`tel:${data.phone}`} className="block font-mono text-sm text-accent hover:text-secondary">
-              {data.phone}
-            </a>
-          )}
-          {data.email && (
-            <a
-              href={`mailto:${data.email}`}
-              className="block font-mono text-sm text-accent hover:text-secondary"
-            >
-              {data.email}
-            </a>
-          )}
-          {data.whatsappNumber && (
-            <a
-              href={`https://wa.me/${data.whatsappNumber.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/90 px-5 py-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-primary shadow-[0_8px_18px_rgba(232,255,0,0.2)] transition hover:-translate-y-0.5 hover:bg-secondary"
-            >
-              <span aria-hidden>💬</span>
-              WHATSAPP
-            </a>
-          )}
-          {data.address && (
-            <p
-              className="max-w-md font-sans text-sm leading-relaxed text-muted"
-              dangerouslySetInnerHTML={{ __html: formatRichText(data.address) }}
-            />
-          )}
-          <div className="flex gap-6 font-mono text-xs uppercase tracking-widest">
-            {ig && (
+          <InfoRow label="Brand Name">
+            <p className="font-display text-4xl uppercase text-secondary">{data.brandName || '—'}</p>
+          </InfoRow>
+
+          <InfoRow label="WhatsApp">
+            {whatsappDigits ? (
+              <a
+                href={`https://wa.me/${whatsappDigits}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-sm text-accent hover:text-secondary"
+              >
+                {data.whatsappNumber}
+              </a>
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
+            )}
+          </InfoRow>
+
+          <InfoRow label="Phone">
+            {data.phone ? (
+              <a href={`tel:${data.phone}`} className="font-mono text-sm text-accent hover:text-secondary">
+                {data.phone}
+              </a>
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
+            )}
+          </InfoRow>
+
+          <InfoRow label="Email">
+            {data.email ? (
+              <a href={`mailto:${data.email}`} className="font-mono text-sm text-accent hover:text-secondary">
+                {data.email}
+              </a>
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
+            )}
+          </InfoRow>
+
+          <InfoRow label="Address">
+            {data.address ? (
+              <div
+                className="max-w-md font-sans text-sm leading-relaxed text-muted"
+                dangerouslySetInnerHTML={{ __html: formatRichText(data.address) }}
+              />
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
+            )}
+          </InfoRow>
+
+          <InfoRow label="Instagram">
+            {ig ? (
               <a
                 href={`https://instagram.com/${ig}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-secondary hover:underline"
+                className="font-mono text-sm text-accent hover:text-secondary"
               >
-                INSTAGRAM
+                @{ig}
               </a>
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
             )}
-            {fb && (
-              <a href={fb} target="_blank" rel="noreferrer" className="text-secondary hover:underline">
-                FACEBOOK
+          </InfoRow>
+
+          <InfoRow label="Facebook">
+            {fb ? (
+              <a href={fb} target="_blank" rel="noreferrer" className="font-mono text-sm text-accent hover:text-secondary">
+                {fb}
               </a>
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
             )}
-          </div>
-          {data.aboutText && (
-            <p
-              className="max-w-prose font-sans text-sm leading-relaxed text-muted"
-              dangerouslySetInnerHTML={{ __html: formatRichText(data.aboutText) }}
-            />
-          )}
+          </InfoRow>
+
+          <InfoRow label="About">
+            {data.aboutText ? (
+              <div
+                className="max-w-prose font-sans text-sm leading-relaxed text-muted"
+                dangerouslySetInnerHTML={{ __html: formatRichText(data.aboutText) }}
+              />
+            ) : (
+              <span className="font-sans text-sm text-muted">—</span>
+            )}
+          </InfoRow>
         </SectionReveal>
 
         <SectionReveal>
@@ -185,5 +216,19 @@ export default function ContactPage() {
         </SectionReveal>
       </div>
     </div>
+  );
+}
+
+function InfoRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.3 }}
+    >
+      <p className="font-mono text-[10px] uppercase tracking-widest text-muted">{label}</p>
+      <div className="mt-2">{children}</div>
+    </motion.div>
   );
 }

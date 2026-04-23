@@ -26,6 +26,8 @@ export interface Product {
   tags: string[];
   isFeatured: boolean;
   isVisible: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

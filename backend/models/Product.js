@@ -31,6 +31,8 @@ const productSchema = new mongoose.Schema(
     tags: [{ type: String }],
     isFeatured: { type: Boolean, default: false },
     isVisible: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

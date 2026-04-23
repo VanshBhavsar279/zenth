@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductGrid } from '@/components/product/ProductGrid';
@@ -43,7 +44,13 @@ export function ProductsClient() {
       </SectionReveal>
 
       <div className="mt-12 flex flex-col gap-10 lg:flex-row">
-        <aside className="w-full shrink-0 space-y-8 lg:sticky lg:top-28 lg:w-72">
+        <motion.aside
+          initial={{ opacity: 0, x: -16 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35 }}
+          className="w-full shrink-0 space-y-8 lg:sticky lg:top-28 lg:w-72"
+        >
           <div>
             <p className="font-mono text-[10px] uppercase tracking-widest text-muted">Category</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -103,9 +110,15 @@ export function ProductsClient() {
               <option value="price_desc">Price · High → Low</option>
             </select>
           </div>
-        </aside>
+        </motion.aside>
 
-        <div className="min-w-0 flex-1">
+        <motion.div
+          className="min-w-0 flex-1"
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, delay: 0.05 }}
+        >
           <div className="mb-6 flex justify-end gap-2">
             <button
               type="button"
@@ -136,7 +149,7 @@ export function ProductsClient() {
           ) : (
             <ProductList products={data} loading={loading} />
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
