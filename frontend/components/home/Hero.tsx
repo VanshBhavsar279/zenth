@@ -1,11 +1,49 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
+const HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1800&q=80',
+];
+
 export function Hero() {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const lastScrollY = useRef(0);
+  const lastSwitchY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const scrolledDown = currentY > lastScrollY.current;
+      const thresholdReached = Math.abs(currentY - lastSwitchY.current) > 140;
+
+      if (scrolledDown && thresholdReached) {
+        setActiveImageIndex((prev) => {
+          if (HERO_IMAGES.length <= 1) return prev;
+          let next = prev;
+          while (next === prev) {
+            next = Math.floor(Math.random() * HERO_IMAGES.length);
+          }
+          return next;
+        });
+        lastSwitchY.current = currentY;
+      }
+
+      lastScrollY.current = currentY;
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const scrollStory = () => {
     document.getElementById('brand-story')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -13,28 +51,26 @@ export function Hero() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0">
-        <Image
-          src="https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1800&q=80"
-          alt="ZENTH streetwear"
-          fill
-          priority
-          className="object-cover opacity-55"
-          sizes="100vw"
-          unoptimized
-        />
-        <video
-          className="hidden h-full w-full object-cover opacity-35 md:block"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1800&q=80"
-        >
-          <source
-            src="https://storage.coverr.co/videos/coverr-skateboarding-in-the-street-5931/1080p.mp4"
-            type="video/mp4"
-          />
-        </video>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={HERO_IMAGES[activeImageIndex]}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={HERO_IMAGES[activeImageIndex]}
+              alt="ZENTH oversized t-shirts"
+              fill
+              priority
+              className="object-cover opacity-55"
+              sizes="100vw"
+              unoptimized
+            />
+          </motion.div>
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-transparent" />
         <div className="grain-overlay" />
       </div>
