@@ -43,7 +43,7 @@ router.post(
   '/',
   authMiddleware,
   body('name').trim().notEmpty(),
-  body('category').isIn(['Hoodies', 'Tees', 'Caps', 'Bottoms', 'Accessories']),
+  body('category').isIn(['Polo', 'Printed', 'Coloured']),
   body('price').isFloat({ min: 0 }),
   validate,
   createProduct

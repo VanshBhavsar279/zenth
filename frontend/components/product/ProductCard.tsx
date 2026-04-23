@@ -40,7 +40,7 @@ export function ProductCard({ product, className }: { product: Product; classNam
             setHoverColor(null);
           }}
         >
-          <div className="relative aspect-[3/4] overflow-hidden bg-primary">
+          <div className="relative aspect-[4/5] overflow-hidden bg-primary md:aspect-[3/4]">
             {oos && (
               <div className="absolute left-3 top-3 z-20">
                 <Badge>OUT OF STOCK</Badge>
@@ -88,12 +88,12 @@ export function ProductCard({ product, className }: { product: Product; classNam
               </span>
             </motion.div>
           </div>
-          <div className="space-y-3 p-4">
+          <div className="space-y-2 p-3 md:space-y-3 md:p-4">
             <div className="flex items-start justify-between gap-3">
-              <h3 className="font-display text-xl uppercase leading-tight text-accent">
+              <h3 className="font-display text-base uppercase leading-tight text-accent md:text-xl">
                 {product.name}
               </h3>
-              <span className="font-mono text-sm text-secondary">
+              <span className="font-mono text-xs text-secondary md:text-sm">
                 {formatPriceINR(product.price)}
               </span>
             </div>
@@ -103,7 +103,7 @@ export function ProductCard({ product, className }: { product: Product; classNam
                   key={c.hex + c.name + idx}
                   type="button"
                   title={c.name}
-                  className="relative h-6 w-6 rounded-full ring-2 ring-transparent transition ring-offset-2 ring-offset-surface hover:scale-110"
+                  className="relative h-5 w-5 rounded-full ring-2 ring-transparent transition ring-offset-2 ring-offset-surface hover:scale-110 md:h-6 md:w-6"
                   style={{
                     backgroundColor: c.hex,
                     boxShadow: idx === active ? '0 0 0 1px var(--color-secondary)' : undefined,

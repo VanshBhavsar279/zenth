@@ -11,11 +11,9 @@ import {
 import type { ColorVariant, Product, ProductCategory } from '@/lib/types';
 
 const categories: ProductCategory[] = [
-  'Hoodies',
-  'Tees',
-  'Caps',
-  'Bottoms',
-  'Accessories',
+  'Polo',
+  'Printed',
+  'Coloured',
 ];
 
 const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -38,7 +36,7 @@ export function ProductForm({
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [category, setCategory] = useState<ProductCategory>(
-    initial?.category ?? 'Hoodies'
+    initial?.category ?? 'Printed'
   );
   const [price, setPrice] = useState(initial?.price ?? 0);
   const [description, setDescription] = useState(initial?.description ?? '');

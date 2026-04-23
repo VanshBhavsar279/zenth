@@ -31,6 +31,15 @@ export function Navbar() {
     setOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   const atHome = pathname === '/';
   const transparent = atHome && !scrolled && !open;
 
@@ -100,10 +109,10 @@ export function Navbar() {
         <AnimatePresence>
           {open && (
             <motion.div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-primary pt-24 md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[55] flex flex-col items-center justify-center gap-8 bg-primary/95 pt-24 backdrop-blur-sm md:hidden"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
               {links.map((l, i) => (
                 <motion.div

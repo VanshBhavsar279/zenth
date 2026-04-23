@@ -1,9 +1,7 @@
 export type ProductCategory =
-  | 'Hoodies'
-  | 'Tees'
-  | 'Caps'
-  | 'Bottoms'
-  | 'Accessories';
+  | 'Polo'
+  | 'Printed'
+  | 'Coloured';
 
 export interface ColorVariant {
   _id?: string;

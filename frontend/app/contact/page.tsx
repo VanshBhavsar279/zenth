@@ -4,6 +4,78 @@ import { SectionReveal } from '@/components/ui/SectionReveal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useContactInfo } from '@/lib/hooks/useContactInfo';
 
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeRichHtml(input: string): string {
+  if (typeof window === 'undefined') return input;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(input, 'text/html');
+  const allowedTags = new Set([
+    'P',
+    'BR',
+    'STRONG',
+    'B',
+    'EM',
+    'I',
+    'U',
+    'UL',
+    'OL',
+    'LI',
+    'A',
+    'DIV',
+    'SPAN',
+  ]);
+
+  const sanitizeNode = (node: Node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      if (!allowedTags.has(el.tagName)) {
+        const text = doc.createTextNode(el.textContent || '');
+        el.replaceWith(text);
+        return;
+      }
+
+      [...el.attributes].forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('on') || name === 'style') {
+          el.removeAttribute(attr.name);
+        }
+      });
+
+      if (el.tagName === 'A') {
+        const href = el.getAttribute('href') || '';
+        const safe = href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:');
+        if (!safe) {
+          el.removeAttribute('href');
+        } else {
+          el.setAttribute('target', '_blank');
+          el.setAttribute('rel', 'noopener noreferrer');
+        }
+      }
+    }
+    [...node.childNodes].forEach(sanitizeNode);
+  };
+
+  sanitizeNode(doc.body);
+  return doc.body.innerHTML;
+}
+
+function formatRichText(input: string): string {
+  const trimmed = input.trim();
+  const hasHtml = /<\/?[a-z][\s\S]*>/i.test(trimmed);
+  if (hasHtml) {
+    return sanitizeRichHtml(trimmed);
+  }
+  return escapeHtml(trimmed).replace(/\r?\n/g, '<br />');
+}
+
 export default function ContactPage() {
   const { data, loading, error } = useContactInfo();
 
@@ -63,9 +135,10 @@ export default function ContactPage() {
             </a>
           )}
           {data.address && (
-            <p className="max-w-md whitespace-pre-line font-sans text-sm leading-relaxed text-muted">
-              {data.address}
-            </p>
+            <p
+              className="max-w-md font-sans text-sm leading-relaxed text-muted"
+              dangerouslySetInnerHTML={{ __html: formatRichText(data.address) }}
+            />
           )}
           <div className="flex gap-6 font-mono text-xs uppercase tracking-widest">
             {ig && (
@@ -85,7 +158,10 @@ export default function ContactPage() {
             )}
           </div>
           {data.aboutText && (
-            <p className="max-w-prose font-sans text-sm leading-relaxed text-muted">{data.aboutText}</p>
+            <p
+              className="max-w-prose font-sans text-sm leading-relaxed text-muted"
+              dangerouslySetInnerHTML={{ __html: formatRichText(data.aboutText) }}
+            />
           )}
         </SectionReveal>
 

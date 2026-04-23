@@ -7,29 +7,19 @@ import type { ProductCategory } from '@/lib/types';
 
 const categories: { name: ProductCategory; image: string }[] = [
   {
-    name: 'Hoodies',
+    name: 'Polo',
     image:
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1000&q=80',
   },
   {
-    name: 'Tees',
+    name: 'Printed',
     image:
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=1000&q=80',
   },
   {
-    name: 'Caps',
+    name: 'Coloured',
     image:
-      'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Bottoms',
-    image:
-      'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Accessories',
-    image:
-      'https://images.unsplash.com/photo-1611923134239-b9be5816e23c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=80',
   },
 ];
 
@@ -57,6 +47,7 @@ export function CollectionStrip() {
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="300px"
+                  unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute inset-0 flex items-end p-6">

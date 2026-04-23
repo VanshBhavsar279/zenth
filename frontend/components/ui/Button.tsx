@@ -24,9 +24,9 @@ export function Button({
 
   const styles: Record<Variant, string> = {
     primary:
-      'bg-secondary text-primary px-8 py-3 hover:opacity-90 active:scale-[0.98]',
+      'bg-secondary text-primary px-8 py-3 shadow-[0_0_0_1px_rgba(232,255,0,0.15)] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(232,255,0,0.16)] active:translate-y-0',
     outline:
-      'border border-accent/30 px-8 py-3 text-accent hover:border-secondary hover:text-secondary',
+      'border border-accent/30 px-8 py-3 text-accent hover:border-accent/60 hover:bg-white/5',
     ghost: 'px-4 py-2 text-muted hover:text-secondary',
   };
 

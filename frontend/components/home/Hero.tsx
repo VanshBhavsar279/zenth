@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -11,13 +12,22 @@ export function Hero() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0">
+        <Image
+          src="https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1800&q=80"
+          alt="ZENTH streetwear"
+          fill
+          priority
+          className="object-cover opacity-55"
+          sizes="100vw"
+          unoptimized
+        />
         <video
-          className="h-full w-full object-cover opacity-50"
+          className="hidden h-full w-full object-cover opacity-35 md:block"
           autoPlay
           muted
           loop
           playsInline
-          poster="https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&w=1600&q=80"
+          poster="https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1800&q=80"
         >
           <source
             src="https://storage.coverr.co/videos/coverr-skateboarding-in-the-street-5931/1080p.mp4"

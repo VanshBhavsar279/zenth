@@ -9,11 +9,9 @@ import { useProducts } from '@/lib/hooks/useProducts';
 import type { ProductCategory } from '@/lib/types';
 
 const categories: ProductCategory[] = [
-  'Hoodies',
-  'Tees',
-  'Caps',
-  'Bottoms',
-  'Accessories',
+  'Polo',
+  'Printed',
+  'Coloured',
 ];
 
 const sizesList = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];

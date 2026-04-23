@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
+import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { updateContact } from '@/lib/api';
 import type { ContactInfo } from '@/lib/types';
 
@@ -89,15 +90,13 @@ export function ContactForm({ initial }: { initial: ContactInfo | null }) {
           className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
         />
       </label>
-      <label className="block space-y-2 md:col-span-2">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Address</span>
-        <textarea
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          rows={3}
-          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
-        />
-      </label>
+      <RichTextEditor
+        label="Address"
+        value={address}
+        onChange={setAddress}
+        placeholder="Write address with formatting..."
+        className="md:col-span-2"
+      />
       <label className="block space-y-2">
         <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
           Instagram Handle
@@ -130,15 +129,13 @@ export function ContactForm({ initial }: { initial: ContactInfo | null }) {
           className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-xs text-accent"
         />
       </label>
-      <label className="block space-y-2 md:col-span-2">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">About Text</span>
-        <textarea
-          value={aboutText}
-          onChange={(e) => setAbout(e.target.value)}
-          rows={5}
-          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
-        />
-      </label>
+      <RichTextEditor
+        label="About Text"
+        value={aboutText}
+        onChange={setAbout}
+        placeholder="Tell your brand story with formatting..."
+        className="md:col-span-2"
+      />
 
       <div className="md:col-span-2">
         <Button type="button" onClick={save} disabled={saving}>

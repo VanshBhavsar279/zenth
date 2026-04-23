@@ -1,19 +1,28 @@
 'use client';
 
-import Image from 'next/image';
+import { useState } from 'react';
 import { SectionReveal } from '@/components/ui/SectionReveal';
 
 export function BrandStory() {
+  const [imgSrc, setImgSrc] = useState(
+    'https://images.unsplash.com/photo-1523398002812-207fdedb0e77?auto=format&fit=crop&w=1200&q=80'
+  );
+
   return (
     <section id="brand-story" className="border-t border-white/10 bg-surface px-4 py-20 md:py-28">
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2 lg:items-center">
         <SectionReveal className="relative aspect-[4/5] overflow-hidden lg:aspect-auto lg:min-h-[420px]">
-          <Image
-            src="https://images.unsplash.com/photo-1523398002812-207fdedb0e77?auto=format&fit=crop&w=900&q=80"
+          {/* Using native img with fallback avoids image optimizer edge cases on mobile browsers */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgSrc}
             alt="ZENTH"
-            fill
-            className="object-cover"
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="h-full w-full object-cover"
+            onError={() =>
+              setImgSrc(
+                'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80'
+              )
+            }
           />
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/60 to-transparent" />
         </SectionReveal>
