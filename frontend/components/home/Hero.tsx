@@ -80,7 +80,7 @@ export function Hero() {
               <img
                 src={HERO_IMAGES[activeImageIndex].mobile}
                 alt="ZENTH oversized t-shirts"
-                className="h-full w-full object-cover opacity-55"
+                className="h-full w-full object-cover object-center opacity-55 md:object-contain"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
