@@ -17,21 +17,43 @@ const buildResponsiveUrls = (baseUrl: string): HeroImageSet => ({
   desktop: `${baseUrl}?auto=format&fit=crop&w=2200&q=85`,
 });
 
-const HERO_IMAGES = [
+const HERO_IMAGES_MOBILE = [
   buildResponsiveUrls('https://images.unsplash.com/photo-1576566588028-4147f3842f27'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1618354691373-d851c5c3a990'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1527719327859-c6ce80353573'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1709940936001-49ac064254fc'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1713974464381-9b954c5acfbf'),
+];
+
+const HERO_IMAGES_DESKTOP = [
+  buildResponsiveUrls('https://images.unsplash.com/photo-1521572163474-6864f9cf17ab'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1441986300917-64674bd600d8'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1523381210434-271e8be1f52b'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1483985988355-763728e1935b'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1512436991641-6745cdb1723f'),
+  buildResponsiveUrls('https://images.unsplash.com/photo-1469334031218-e382a71b716b'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1708201596932-595638a910ee'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1661110546798-74f41273fbc7'),
 ];
 
 export function Hero() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isDesktopView, setIsDesktopView] = useState(false);
   const lastScrollY = useRef(0);
   const lastSwitchY = useRef(0);
+  const heroImages = isDesktopView ? HERO_IMAGES_DESKTOP : HERO_IMAGES_MOBILE;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const updateView = () => setIsDesktopView(mediaQuery.matches);
+    updateView();
+    mediaQuery.addEventListener('change', updateView);
+
+    return () => mediaQuery.removeEventListener('change', updateView);
+  }, []);
+
+  useEffect(() => {
+    setActiveImageIndex((prev) => prev % heroImages.length);
+  }, [heroImages.length]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -41,10 +63,10 @@ export function Hero() {
 
       if (scrolledDown && thresholdReached) {
         setActiveImageIndex((prev) => {
-          if (HERO_IMAGES.length <= 1) return prev;
+          if (heroImages.length <= 1) return prev;
           let next = prev;
           while (next === prev) {
-            next = Math.floor(Math.random() * HERO_IMAGES.length);
+            next = Math.floor(Math.random() * heroImages.length);
           }
           return next;
         });
@@ -56,7 +78,7 @@ export function Hero() {
 
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [heroImages]);
 
   const scrollStory = () => {
     document.getElementById('brand-story')?.scrollIntoView({ behavior: 'smooth' });
@@ -67,7 +89,7 @@ export function Hero() {
       <div className="absolute inset-0">
         <AnimatePresence mode="wait">
           <motion.div
-            key={HERO_IMAGES[activeImageIndex].desktop}
+            key={heroImages[activeImageIndex].desktop}
             initial={{ opacity: 0, scale: 1.03 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
@@ -75,25 +97,12 @@ export function Hero() {
             className="absolute inset-0"
           >
             <picture>
-              <source media="(min-width: 1280px)" srcSet={HERO_IMAGES[activeImageIndex].desktop} />
-              <source media="(min-width: 768px)" srcSet={HERO_IMAGES[activeImageIndex].tablet} />
+              <source media="(min-width: 1280px)" srcSet={heroImages[activeImageIndex].desktop} />
+              <source media="(min-width: 768px)" srcSet={heroImages[activeImageIndex].tablet} />
               <img
-                src={HERO_IMAGES[activeImageIndex].mobile}
+                src={heroImages[activeImageIndex].mobile}
                 alt="ZENTH oversized t-shirts"
                 className="h-full w-full object-cover object-center opacity-55"
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-              />
-            </picture>
-            <picture className="pointer-events-none absolute inset-0 hidden md:block">
-              <source media="(min-width: 1280px)" srcSet={HERO_IMAGES[activeImageIndex].desktop} />
-              <source media="(min-width: 768px)" srcSet={HERO_IMAGES[activeImageIndex].tablet} />
-              <img
-                src={HERO_IMAGES[activeImageIndex].mobile}
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-contain object-center opacity-45"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
