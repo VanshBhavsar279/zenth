@@ -80,7 +80,20 @@ export function Hero() {
               <img
                 src={HERO_IMAGES[activeImageIndex].mobile}
                 alt="ZENTH oversized t-shirts"
-                className="h-full w-full object-cover object-center opacity-55 md:object-contain"
+                className="h-full w-full object-cover object-center opacity-55"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
+            <picture className="pointer-events-none absolute inset-0 hidden md:block">
+              <source media="(min-width: 1280px)" srcSet={HERO_IMAGES[activeImageIndex].desktop} />
+              <source media="(min-width: 768px)" srcSet={HERO_IMAGES[activeImageIndex].tablet} />
+              <img
+                src={HERO_IMAGES[activeImageIndex].mobile}
+                alt=""
+                aria-hidden="true"
+                className="h-full w-full object-contain object-center opacity-45"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
