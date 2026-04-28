@@ -11,41 +11,47 @@ type HeroImageSet = {
   desktop: string;
 };
 
-const buildResponsiveUrls = (baseUrl: string): HeroImageSet => ({
-  mobile: `${baseUrl}?auto=format&fit=crop&w=900&q=75`,
-  tablet: `${baseUrl}?auto=format&fit=crop&w=1400&q=80`,
-  desktop: `${baseUrl}?auto=format&fit=crop&w=2200&q=85`,
-});
+const buildResponsiveUrls = (baseUrl: string): HeroImageSet => {
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  return {
+    mobile: `${baseUrl}${separator}auto=format&fit=crop&w=900&q=75`,
+    tablet: `${baseUrl}${separator}auto=format&fit=crop&w=1400&q=80`,
+    desktop: `${baseUrl}${separator}auto=format&fit=crop&w=2200&q=85`,
+  };
+};
+
+const unsplashPhotoDownloadUrl = (photoId: string) =>
+  `https://unsplash.com/photos/${photoId}/download?force=true`;
 
 const HERO_IMAGES_MOBILE = [
   buildResponsiveUrls('https://images.unsplash.com/photo-1576566588028-4147f3842f27'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1618354691373-d851c5c3a990'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1527719327859-c6ce80353573'),
-  buildResponsiveUrls('https://source.unsplash.com/4H9dxwdAT_A'),
-  buildResponsiveUrls('https://source.unsplash.com/u5B6kAeVCYo'),
-  buildResponsiveUrls('https://source.unsplash.com/pUT3Dugj-wM'),
-  buildResponsiveUrls('https://source.unsplash.com/oT_LOy3n9h4'),
-  buildResponsiveUrls('https://source.unsplash.com/KGGpBJ47jGg'),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('4H9dxwdAT_A')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('u5B6kAeVCYo')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('pUT3Dugj-wM')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('oT_LOy3n9h4')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('KGGpBJ47jGg')),
 ];
 
 const HERO_IMAGES_DESKTOP = [
-  buildResponsiveUrls('https://source.unsplash.com/3fXs48dBpH4'),
-  buildResponsiveUrls('https://source.unsplash.com/Ba8JB_A7www'),
-  buildResponsiveUrls('https://source.unsplash.com/oQ273tab664'),
-  buildResponsiveUrls('https://source.unsplash.com/00tlC0Clfrs'),
-  buildResponsiveUrls('https://source.unsplash.com/E-CDXwZrcqQ'),
-  buildResponsiveUrls('https://source.unsplash.com/ieG2f9NYUW0'),
-  buildResponsiveUrls('https://source.unsplash.com/T-f369iv-4M'),
-  buildResponsiveUrls('https://source.unsplash.com/d0Jc4WA1lpo'),
-  buildResponsiveUrls('https://source.unsplash.com/A68zY5MPzug'),
-  buildResponsiveUrls('https://source.unsplash.com/XISr_H8CvXY'),
-  buildResponsiveUrls('https://source.unsplash.com/vIAGW486ewo'),
-  buildResponsiveUrls('https://source.unsplash.com/eD8PIv_7CTg'),
-  buildResponsiveUrls('https://source.unsplash.com/qxvKtSrrsPE'),
-  buildResponsiveUrls('https://source.unsplash.com/ZPdEAwC_MwU'),
-  buildResponsiveUrls('https://source.unsplash.com/Ot1_-Ljuq7c'),
-  buildResponsiveUrls('https://source.unsplash.com/JCZ2Kv-ieCo'),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('3fXs48dBpH4')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('Ba8JB_A7www')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('oQ273tab664')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('00tlC0Clfrs')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('E-CDXwZrcqQ')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('ieG2f9NYUW0')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('T-f369iv-4M')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('d0Jc4WA1lpo')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('A68zY5MPzug')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('XISr_H8CvXY')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('vIAGW486ewo')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('eD8PIv_7CTg')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('qxvKtSrrsPE')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('ZPdEAwC_MwU')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('Ot1_-Ljuq7c')),
+  buildResponsiveUrls(unsplashPhotoDownloadUrl('JCZ2Kv-ieCo')),
 ];
 
 export function Hero() {
