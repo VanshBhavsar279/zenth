@@ -22,17 +22,30 @@ const HERO_IMAGES_MOBILE = [
   buildResponsiveUrls('https://images.unsplash.com/photo-1618354691373-d851c5c3a990'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a'),
   buildResponsiveUrls('https://images.unsplash.com/photo-1527719327859-c6ce80353573'),
+  buildResponsiveUrls('https://source.unsplash.com/4H9dxwdAT_A'),
+  buildResponsiveUrls('https://source.unsplash.com/u5B6kAeVCYo'),
+  buildResponsiveUrls('https://source.unsplash.com/pUT3Dugj-wM'),
+  buildResponsiveUrls('https://source.unsplash.com/oT_LOy3n9h4'),
+  buildResponsiveUrls('https://source.unsplash.com/KGGpBJ47jGg'),
 ];
 
 const HERO_IMAGES_DESKTOP = [
-  buildResponsiveUrls('https://images.unsplash.com/photo-1521572163474-6864f9cf17ab'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1441986300917-64674bd600d8'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1523381210434-271e8be1f52b'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1483985988355-763728e1935b'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1512436991641-6745cdb1723f'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1469334031218-e382a71b716b'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1708201596932-595638a910ee'),
+  buildResponsiveUrls('https://source.unsplash.com/3fXs48dBpH4'),
+  buildResponsiveUrls('https://source.unsplash.com/Ba8JB_A7www'),
+  buildResponsiveUrls('https://source.unsplash.com/oQ273tab664'),
+  buildResponsiveUrls('https://source.unsplash.com/00tlC0Clfrs'),
+  buildResponsiveUrls('https://source.unsplash.com/E-CDXwZrcqQ'),
+  buildResponsiveUrls('https://source.unsplash.com/ieG2f9NYUW0'),
+  buildResponsiveUrls('https://source.unsplash.com/T-f369iv-4M'),
+  buildResponsiveUrls('https://source.unsplash.com/d0Jc4WA1lpo'),
+  buildResponsiveUrls('https://source.unsplash.com/A68zY5MPzug'),
+  buildResponsiveUrls('https://source.unsplash.com/XISr_H8CvXY'),
+  buildResponsiveUrls('https://source.unsplash.com/vIAGW486ewo'),
+  buildResponsiveUrls('https://source.unsplash.com/eD8PIv_7CTg'),
+  buildResponsiveUrls('https://source.unsplash.com/qxvKtSrrsPE'),
+  buildResponsiveUrls('https://source.unsplash.com/ZPdEAwC_MwU'),
+  buildResponsiveUrls('https://source.unsplash.com/Ot1_-Ljuq7c'),
+  buildResponsiveUrls('https://source.unsplash.com/JCZ2Kv-ieCo'),
 ];
 
 export function Hero() {
