@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import {
   getTheme,
+  getHeroImages,
   getContact,
   updateTheme,
+  updateHeroImages,
   updateContact,
 } from '../controllers/settingsController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
@@ -19,6 +21,7 @@ const validate = (req, res, next) => {
 };
 
 router.get('/theme', getTheme);
+router.get('/hero', getHeroImages);
 router.get('/contact', getContact);
 
 router.put(
@@ -32,9 +35,24 @@ router.put(
 );
 
 router.put(
+  '/hero',
+  authMiddleware,
+  body('heroImagesMobile').optional().isArray(),
+  body('heroImagesMobile.*').optional().isString(),
+  body('heroImagesDesktop').optional().isArray(),
+  body('heroImagesDesktop.*').optional().isString(),
+  validate,
+  updateHeroImages
+);
+
+router.put(
   '/contact',
   authMiddleware,
   body('brandName').optional().isString(),
+  body('heroKicker').optional().isString(),
+  body('heroHeadline').optional().isString(),
+  body('heroTagline').optional().isString(),
+  body('footerTagline').optional().isString(),
   body('whatsappNumber').optional().isString(),
   body('phone').optional().isString(),
   body('email').optional().isString(),

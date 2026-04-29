@@ -1,9 +1,28 @@
-import type { ContactInfo, Product, ProductCategory, ThemeSettings } from './types';
+import type { ContactInfo, HeroImagesSettings, Product, ProductCategory, ThemeSettings } from './types';
 
 const base = () =>
   (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000').trim().replace(/\/+$/, '');
 
 const apiUrl = (path: string) => `${base()}${path}`;
+
+function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const t = window.localStorage.getItem('zenth_token');
+    return t && t.trim() ? t.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+function withAuthHeader(headers?: HeadersInit): HeadersInit {
+  const token = getStoredToken();
+  if (!token) return headers || {};
+  // Do not overwrite explicit Authorization header.
+  const h = new Headers(headers || {});
+  if (!h.get('Authorization')) h.set('Authorization', `Bearer ${token}`);
+  return Object.fromEntries(h.entries());
+}
 
 async function fetchJson<T>(
   path: string,
@@ -16,7 +35,7 @@ async function fetchJson<T>(
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        ...(options.headers || {}),
+        ...(withAuthHeader(options.headers) || {}),
       },
     });
   } catch {
@@ -45,6 +64,11 @@ export async function getTheme(): Promise<ThemeSettings> {
   return fetchJson<ThemeSettings>('/api/settings/theme');
 }
 
+/** Hero images — public */
+export async function getHeroImages(): Promise<HeroImagesSettings> {
+  return fetchJson<HeroImagesSettings>('/api/settings/hero');
+}
+
 /** Contact — public */
 export async function getContact(): Promise<ContactInfo> {
   return fetchJson<ContactInfo>('/api/settings/contact');
@@ -70,14 +94,30 @@ export async function getProductById(id: string): Promise<Product> {
 
 /** Auth */
 export async function loginAdmin(email: string, password: string) {
-  return fetchJson<{ message: string; email: string }>('/api/auth/login', {
+  const res = await fetchJson<{ message: string; email: string; token?: string }>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+  if (typeof window !== 'undefined' && res.token) {
+    try {
+      window.localStorage.setItem('zenth_token', res.token);
+    } catch {
+      /* ignore */
+    }
+  }
+  return res;
 }
 
 export async function logoutAdmin() {
-  return fetchJson<{ message: string }>('/api/auth/logout', { method: 'POST' });
+  const res = await fetchJson<{ message: string }>('/api/auth/logout', { method: 'POST' });
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.removeItem('zenth_token');
+    } catch {
+      /* ignore */
+    }
+  }
+  return res;
 }
 
 export async function authMe(): Promise<{ authenticated: boolean; email?: string }> {
@@ -155,6 +195,13 @@ export async function updateContact(payload: Partial<ContactInfo>) {
   });
 }
 
+export async function updateHeroImages(payload: Partial<HeroImagesSettings>) {
+  return fetchJson<HeroImagesSettings>('/api/settings/hero', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function uploadImage(file: File): Promise<{ url: string; publicId?: string }> {
   const form = new FormData();
   form.append('image', file);
@@ -163,11 +210,38 @@ export async function uploadImage(file: File): Promise<{ url: string; publicId?:
     res = await fetch(apiUrl('/api/upload'), {
       method: 'POST',
       credentials: 'include',
+      headers: withAuthHeader(),
       body: form,
     });
   } catch {
     throw new Error(
       `Cannot connect to API (${apiUrl('/api/upload')}). Check backend is running and CORS/env values are correct.`
+    );
+  }
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(t || 'Upload failed');
+  }
+  return res.json();
+}
+
+export async function uploadHeroImages(
+  view: 'mobile' | 'desktop',
+  files: File[]
+): Promise<{ items: Array<{ url: string; publicId?: string }> }> {
+  const form = new FormData();
+  files.forEach((f) => form.append('images', f));
+  let res: Response;
+  try {
+    res = await fetch(apiUrl(`/api/upload/hero?view=${encodeURIComponent(view)}`), {
+      method: 'POST',
+      credentials: 'include',
+      headers: withAuthHeader(),
+      body: form,
+    });
+  } catch {
+    throw new Error(
+      `Cannot connect to API (${apiUrl('/api/upload/hero')}). Check backend is running and CORS/env values are correct.`
     );
   }
   if (!res.ok) {

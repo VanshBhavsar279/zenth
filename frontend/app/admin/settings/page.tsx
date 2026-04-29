@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { ContactForm } from '@/components/admin/ContactForm';
+import { HeroImagesManager } from '@/components/admin/HeroImagesManager';
 import { LogoUpload } from '@/components/admin/LogoUpload';
 import { RequireAdmin } from '@/components/admin/RequireAdmin';
 import { ThemePicker } from '@/components/admin/ThemePicker';
@@ -179,6 +180,10 @@ function SettingsInner() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               <PreviewItem label="Brand Name" value={data?.brandName} />
+              <PreviewItem label="Hero Kicker" value={data?.heroKicker} />
+              <PreviewItem label="Hero Headline" value={data?.heroHeadline} />
+              <PreviewItem label="Hero Tagline" value={data?.heroTagline} full />
+              <PreviewItem label="Footer Tagline" value={data?.footerTagline} full />
               <PreviewItem label="WhatsApp" value={data?.whatsappNumber} />
               <PreviewItem label="Phone" value={data?.phone} />
               <PreviewItem label="Email" value={data?.email} />
@@ -189,6 +194,13 @@ function SettingsInner() {
               <PreviewItem label="About" value={data?.aboutText} full />
             </div>
           )}
+        </section>
+
+        <section className="space-y-6 border-t border-white/10 pt-10">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="font-display text-3xl uppercase text-secondary">HERO IMAGES</h2>
+          </div>
+          <HeroImagesManager />
         </section>
       </div>
     </div>

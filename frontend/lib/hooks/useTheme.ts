@@ -7,6 +7,7 @@ import { useThemeStore } from '@/lib/store';
 export function useThemeLoader() {
   const setTheme = useThemeStore((s) => s.setTheme);
   const applyCssVariables = useThemeStore((s) => s.applyCssVariables);
+  const setHydrated = useThemeStore((s) => s.setHydrated);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,10 +23,12 @@ export function useThemeLoader() {
         applyCssVariables();
       } catch {
         applyCssVariables();
+      } finally {
+        if (!cancelled) setHydrated(true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [setTheme, applyCssVariables]);
+  }, [setTheme, applyCssVariables, setHydrated]);
 }

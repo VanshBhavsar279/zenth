@@ -9,6 +9,10 @@ import type { ContactInfo } from '@/lib/types';
 
 export function ContactForm({ initial }: { initial: ContactInfo | null }) {
   const [brandName, setBrandName] = useState('');
+  const [heroKicker, setHeroKicker] = useState('');
+  const [heroHeadline, setHeroHeadline] = useState('');
+  const [heroTagline, setHeroTagline] = useState('');
+  const [footerTagline, setFooterTagline] = useState('');
   const [whatsappNumber, setWhatsapp] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -22,6 +26,10 @@ export function ContactForm({ initial }: { initial: ContactInfo | null }) {
   useEffect(() => {
     if (!initial) return;
     setBrandName(initial.brandName ?? '');
+    setHeroKicker(initial.heroKicker ?? '');
+    setHeroHeadline(initial.heroHeadline ?? '');
+    setHeroTagline(initial.heroTagline ?? '');
+    setFooterTagline(initial.footerTagline ?? '');
     setWhatsapp(initial.whatsappNumber ?? '');
     setPhone(initial.phone ?? '');
     setEmail(initial.email ?? '');
@@ -37,6 +45,10 @@ export function ContactForm({ initial }: { initial: ContactInfo | null }) {
     try {
       await updateContact({
         brandName,
+        heroKicker,
+        heroHeadline,
+        heroTagline,
+        footerTagline,
         whatsappNumber,
         phone,
         email,
@@ -62,6 +74,42 @@ export function ContactForm({ initial }: { initial: ContactInfo | null }) {
           value={brandName}
           onChange={(e) => setBrandName(e.target.value)}
           className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
+        />
+      </label>
+      <label className="block space-y-2">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Hero Kicker</span>
+        <input
+          value={heroKicker}
+          onChange={(e) => setHeroKicker(e.target.value)}
+          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-mono text-sm text-accent"
+          placeholder="STREETWEAR"
+        />
+      </label>
+      <label className="block space-y-2">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Hero Headline</span>
+        <input
+          value={heroHeadline}
+          onChange={(e) => setHeroHeadline(e.target.value)}
+          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
+          placeholder="DEFINE THE STREET"
+        />
+      </label>
+      <label className="block space-y-2 md:col-span-2">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Hero Tagline</span>
+        <input
+          value={heroTagline}
+          onChange={(e) => setHeroTagline(e.target.value)}
+          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
+          placeholder="Limited drops. Premium fits. Built for the bold."
+        />
+      </label>
+      <label className="block space-y-2 md:col-span-2">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Footer Tagline</span>
+        <input
+          value={footerTagline}
+          onChange={(e) => setFooterTagline(e.target.value)}
+          className="w-full rounded-sm border border-white/10 bg-primary px-3 py-2 font-sans text-sm text-accent"
+          placeholder="Streetwear for the bold. Built in the culture."
         />
       </label>
       <label className="block space-y-2 md:col-span-2">

@@ -1,22 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { MagneticCursor } from '@/components/layout/MagneticCursor';
-import { useThemeLoader } from '@/lib/hooks/useTheme';
-import { useThemeStore } from '@/lib/store';
+import { BootLoader } from '@/components/ui/BootLoader';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  useThemeLoader();
-
-  useEffect(() => {
-    useThemeStore.getState().applyCssVariables();
-  }, []);
-
   return (
     <>
       <MagneticCursor />
-      {children}
+      <BootLoader>{children}</BootLoader>
       <Toaster
         position="top-center"
         toastOptions={{

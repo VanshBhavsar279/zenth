@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { SectionReveal } from '@/components/ui/SectionReveal';
+import { useContactStore } from '@/lib/store';
 
 const EXCLUDED_IMAGE_IDS = new Set([
   // Hero images
@@ -43,6 +44,7 @@ function extractUnsplashId(url: string): string | null {
 export function BrandStory() {
   const fallbackImage = useMemo(() => randomFrom(FALLBACK_POOL), []);
   const [imgSrc, setImgSrc] = useState(fallbackImage);
+  const brandName = useContactStore((s) => s.contact?.brandName?.trim() || 'ZENTH');
 
   useEffect(() => {
     const accessKey = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY?.trim();
@@ -97,7 +99,7 @@ export function BrandStory() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}
-            alt="ZENTH"
+            alt={brandName}
             className="h-full w-full object-cover"
             onError={() => setImgSrc(fallbackImage)}
           />
@@ -108,11 +110,20 @@ export function BrandStory() {
           <h2 className="mt-4 font-display text-4xl uppercase leading-[0.95] text-accent md:text-6xl">
             BORN ON THE STREETS. BUILT FOR THE BOLD.
           </h2>
-          <p className="mt-8 max-w-lg font-sans text-sm leading-relaxed text-muted md:text-base">
-            ZENTH is a uniform for those who move different—sharp silhouettes, premium fabrics,
-            and energy pulled straight from the pavement. Every piece is designed to read loud in
-            low light and hold up when the night runs long.
-          </p>
+          <div className="mt-8 max-w-lg space-y-5 font-sans text-sm leading-relaxed text-muted md:text-base">
+            <p>
+              {brandName} isn’t just clothing — it’s a statement for people who refuse the background.
+            </p>
+            <p>
+              We design oversized essentials with a heavyweight feel, sharp structure, and a fit that holds its
+              shape from the first wear to the hundredth.
+            </p>
+            <p>
+              Clean lines. Loud presence. Pieces that hit hard in daylight and feel even stronger after dark —
+              built for the ones who move different.
+            </p>
+            <p className="text-accent/90">Family-built. Street-approved. Worn like confidence.</p>
+          </div>
         </SectionReveal>
       </div>
     </section>

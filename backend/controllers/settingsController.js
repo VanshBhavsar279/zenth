@@ -14,6 +14,18 @@ export const getTheme = async (req, res, next) => {
   }
 };
 
+export const getHeroImages = async (req, res, next) => {
+  try {
+    const settings = await Settings.getSingleton();
+    res.json({
+      heroImagesMobile: settings.heroImagesMobile || [],
+      heroImagesDesktop: settings.heroImagesDesktop || [],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getContact = async (req, res, next) => {
   try {
     const contact = await ContactInfo.getSingleton();
@@ -41,11 +53,33 @@ export const updateTheme = async (req, res, next) => {
   }
 };
 
+export const updateHeroImages = async (req, res, next) => {
+  try {
+    const settings = await Settings.getSingleton();
+    const { heroImagesMobile, heroImagesDesktop } = req.body;
+
+    if (heroImagesMobile !== undefined) settings.heroImagesMobile = heroImagesMobile;
+    if (heroImagesDesktop !== undefined) settings.heroImagesDesktop = heroImagesDesktop;
+
+    await settings.save();
+    res.json({
+      heroImagesMobile: settings.heroImagesMobile || [],
+      heroImagesDesktop: settings.heroImagesDesktop || [],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateContact = async (req, res, next) => {
   try {
     const contact = await ContactInfo.getSingleton();
     const allowed = [
       'brandName',
+      'heroKicker',
+      'heroHeadline',
+      'heroTagline',
+      'footerTagline',
       'whatsappNumber',
       'phone',
       'email',

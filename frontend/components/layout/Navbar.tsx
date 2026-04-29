@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useThemeStore } from '@/lib/store';
+import { useContactStore, useThemeStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -17,6 +17,7 @@ const links = [
 export function Navbar() {
   const pathname = usePathname();
   const logoUrl = useThemeStore((s) => s.logoUrl);
+  const brandName = useContactStore((s) => s.contact?.brandName?.trim() || 'ZENTH');
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -56,7 +57,7 @@ export function Navbar() {
             {logoUrl ? (
               <Image
                 src={logoUrl}
-                alt="ZENTH"
+                alt={brandName}
                 width={120}
                 height={40}
                 className="h-9 w-auto object-contain md:h-10"
@@ -64,7 +65,7 @@ export function Navbar() {
               />
             ) : (
               <span className="font-display text-3xl uppercase tracking-[0.2em] text-secondary md:text-4xl">
-                ZENTH
+                {brandName}
               </span>
             )}
           </Link>

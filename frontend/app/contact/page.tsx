@@ -5,78 +5,7 @@ import { motion } from 'framer-motion';
 import { SectionReveal } from '@/components/ui/SectionReveal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useContactInfo } from '@/lib/hooks/useContactInfo';
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function sanitizeRichHtml(input: string): string {
-  if (typeof window === 'undefined') return input;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(input, 'text/html');
-  const allowedTags = new Set([
-    'P',
-    'BR',
-    'STRONG',
-    'B',
-    'EM',
-    'I',
-    'U',
-    'UL',
-    'OL',
-    'LI',
-    'A',
-    'DIV',
-    'SPAN',
-  ]);
-
-  const sanitizeNode = (node: Node) => {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement;
-      if (!allowedTags.has(el.tagName)) {
-        const text = doc.createTextNode(el.textContent || '');
-        el.replaceWith(text);
-        return;
-      }
-
-      Array.from(el.attributes).forEach((attr) => {
-        const name = attr.name.toLowerCase();
-        if (name.startsWith('on') || name === 'style') {
-          el.removeAttribute(attr.name);
-        }
-      });
-
-      if (el.tagName === 'A') {
-        const href = el.getAttribute('href') || '';
-        const safe = href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:');
-        if (!safe) {
-          el.removeAttribute('href');
-        } else {
-          el.setAttribute('target', '_blank');
-          el.setAttribute('rel', 'noopener noreferrer');
-        }
-      }
-    }
-    Array.from(node.childNodes).forEach(sanitizeNode);
-  };
-
-  sanitizeNode(doc.body);
-  return doc.body.innerHTML;
-}
-
-function formatRichText(input: string): string {
-  const trimmed = input.trim();
-  const hasHtml = /<\/?[a-z][\s\S]*>/i.test(trimmed);
-  if (hasHtml) {
-    return sanitizeRichHtml(trimmed);
-  }
-  return escapeHtml(trimmed).replace(/\r?\n/g, '<br />');
-}
+import { formatRichText } from '@/lib/richText';
 
 export default function ContactPage() {
   const { data, loading, error } = useContactInfo();
@@ -98,7 +27,6 @@ export default function ContactPage() {
   }
 
   const ig = data.instagramHandle?.replace(/^@/, '') || '';
-  const fb = data.facebookHandle || '';
   const whatsappDigits = data.whatsappNumber?.replace(/\D/g, '') || '';
 
   return (
@@ -123,16 +51,6 @@ export default function ContactPage() {
                 className="font-mono text-sm text-accent hover:text-secondary"
               >
                 {data.whatsappNumber}
-              </a>
-            ) : (
-              <span className="font-sans text-sm text-muted">—</span>
-            )}
-          </InfoRow>
-
-          <InfoRow label="Phone">
-            {data.phone ? (
-              <a href={`tel:${data.phone}`} className="font-mono text-sm text-accent hover:text-secondary">
-                {data.phone}
               </a>
             ) : (
               <span className="font-sans text-sm text-muted">—</span>
@@ -169,16 +87,6 @@ export default function ContactPage() {
                 className="font-mono text-sm text-accent hover:text-secondary"
               >
                 @{ig}
-              </a>
-            ) : (
-              <span className="font-sans text-sm text-muted">—</span>
-            )}
-          </InfoRow>
-
-          <InfoRow label="Facebook">
-            {fb ? (
-              <a href={fb} target="_blank" rel="noreferrer" className="font-mono text-sm text-accent hover:text-secondary">
-                {fb}
               </a>
             ) : (
               <span className="font-sans text-sm text-muted">—</span>

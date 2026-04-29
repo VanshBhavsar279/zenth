@@ -1,7 +1,12 @@
 import jwt from 'jsonwebtoken';
 
 export const authMiddleware = (req, res, next) => {
-  const token = req.cookies?.zenth_token;
+  const cookieToken = req.cookies?.zenth_token;
+  const header = req.headers?.authorization || '';
+  const bearerToken = typeof header === 'string' && header.toLowerCase().startsWith('bearer ')
+    ? header.slice('bearer '.length).trim()
+    : null;
+  const token = cookieToken || bearerToken;
   if (!token) {
     return res.status(401).json({ message: 'Not authorized' });
   }

@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { getHeroImages } from '@/lib/api';
+import { useContactStore } from '@/lib/store';
 
 type HeroImageSet = {
   mobile: string;
@@ -20,46 +22,46 @@ const buildResponsiveUrls = (baseUrl: string): HeroImageSet => {
   };
 };
 
-const unsplashPhotoDownloadUrl = (photoId: string) =>
-  `https://unsplash.com/photos/${photoId}/download?force=true`;
-
-const HERO_IMAGES_MOBILE = [
-  buildResponsiveUrls('https://images.unsplash.com/photo-1576566588028-4147f3842f27'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1618354691373-d851c5c3a990'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1583743814966-8936f5b7be1a'),
-  buildResponsiveUrls('https://images.unsplash.com/photo-1527719327859-c6ce80353573'),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('4H9dxwdAT_A')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('u5B6kAeVCYo')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('pUT3Dugj-wM')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('oT_LOy3n9h4')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('KGGpBJ47jGg')),
-];
-
-const HERO_IMAGES_DESKTOP = [
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('3fXs48dBpH4')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('Ba8JB_A7www')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('oQ273tab664')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('00tlC0Clfrs')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('E-CDXwZrcqQ')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('ieG2f9NYUW0')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('T-f369iv-4M')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('d0Jc4WA1lpo')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('A68zY5MPzug')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('XISr_H8CvXY')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('vIAGW486ewo')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('eD8PIv_7CTg')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('qxvKtSrrsPE')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('ZPdEAwC_MwU')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('Ot1_-Ljuq7c')),
-  buildResponsiveUrls(unsplashPhotoDownloadUrl('JCZ2Kv-ieCo')),
-];
+function AnimatedWords({ text, className }: { text: string; className?: string }) {
+  const words = (text || '').trim().split(/\s+/).filter(Boolean);
+  return (
+    <span className={className}>
+      {words.map((w, i) => (
+        <motion.span
+          key={`${w}-${i}`}
+          className="inline-block"
+          initial={{ opacity: 0, y: 22, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ delay: 0.06 * i + 0.08, duration: 0.55, ease: [0.2, 0.9, 0.2, 1] }}
+        >
+          {w}
+          {i < words.length - 1 ? '\u00A0' : ''}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
 
 export function Hero() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isDesktopView, setIsDesktopView] = useState(false);
+  const [remoteMobile, setRemoteMobile] = useState<HeroImageSet[] | null>(null);
+  const [remoteDesktop, setRemoteDesktop] = useState<HeroImageSet[] | null>(null);
+  const brandName = useContactStore((s) => s.contact?.brandName?.trim() || 'ZENTH');
+  const heroKicker = useContactStore((s) => s.contact?.heroKicker?.trim() || '');
+  const heroHeadline = useContactStore((s) => s.contact?.heroHeadline?.trim() || 'DEFINE THE STREET');
+  const heroTagline = useContactStore((s) => s.contact?.heroTagline?.trim() || '');
   const lastScrollY = useRef(0);
   const lastSwitchY = useRef(0);
-  const heroImages = isDesktopView ? HERO_IMAGES_DESKTOP : HERO_IMAGES_MOBILE;
+  const failedKeys = useRef<Set<string>>(new Set());
+  const heroImages = isDesktopView ? remoteDesktop : remoteMobile;
+
+  const pickRandomIndex = (len: number, exclude?: number) => {
+    if (len <= 1) return 0;
+    let next = exclude ?? -1;
+    while (next === exclude) next = Math.floor(Math.random() * len);
+    return next;
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)');
@@ -71,10 +73,38 @@ export function Hero() {
   }, []);
 
   useEffect(() => {
-    setActiveImageIndex((prev) => prev % heroImages.length);
-  }, [heroImages.length]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await getHeroImages();
+        if (cancelled) return;
+        const mobile = (res.heroImagesMobile || []).filter(Boolean).map(buildResponsiveUrls);
+        const desktop = (res.heroImagesDesktop || []).filter(Boolean).map(buildResponsiveUrls);
+        setRemoteMobile(mobile.length ? mobile : null);
+        setRemoteDesktop(desktop.length ? desktop : null);
+      } catch {
+        // If API fails, keep empty background.
+        setRemoteMobile(null);
+        setRemoteDesktop(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
+    // When the image pool changes (remote fetch or breakpoint switch),
+    // pick a random starting image instead of always showing index 0.
+    const len = heroImages?.length ?? 0;
+    if (len <= 0) return;
+    failedKeys.current.clear();
+    setActiveImageIndex((prev) => pickRandomIndex(len, prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroImages?.length, isDesktopView]);
+
+  useEffect(() => {
+    const list = heroImages ?? [];
     const onScroll = () => {
       const currentY = window.scrollY;
       const scrolledDown = currentY > lastScrollY.current;
@@ -82,10 +112,10 @@ export function Hero() {
 
       if (scrolledDown && thresholdReached) {
         setActiveImageIndex((prev) => {
-          if (heroImages.length <= 1) return prev;
+          if (list.length <= 1) return prev;
           let next = prev;
           while (next === prev) {
-            next = Math.floor(Math.random() * heroImages.length);
+            next = Math.floor(Math.random() * list.length);
           }
           return next;
         });
@@ -107,27 +137,45 @@ export function Hero() {
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={heroImages[activeImageIndex].desktop}
-            initial={{ opacity: 0, scale: 1.03 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="absolute inset-0"
-          >
-            <picture>
-              <source media="(min-width: 1280px)" srcSet={heroImages[activeImageIndex].desktop} />
-              <source media="(min-width: 768px)" srcSet={heroImages[activeImageIndex].tablet} />
-              <img
-                src={heroImages[activeImageIndex].mobile}
-                alt="ZENTH oversized t-shirts"
-                className="h-full w-full object-cover object-center opacity-55"
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-              />
-            </picture>
-          </motion.div>
+          {heroImages?.length ? (
+            <motion.div
+              key={heroImages[activeImageIndex]?.desktop || activeImageIndex}
+              initial={{ opacity: 0, scale: 1.03 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+              className="absolute inset-0"
+            >
+              <picture>
+                <source media="(min-width: 1280px)" srcSet={heroImages[activeImageIndex].desktop} />
+                <source media="(min-width: 768px)" srcSet={heroImages[activeImageIndex].tablet} />
+                <img
+                  src={heroImages[activeImageIndex].mobile}
+                  alt={`${brandName} oversized t-shirts`}
+                  className="h-full w-full object-cover object-center opacity-55"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  onError={() => {
+                    const list = heroImages ?? [];
+                    const key =
+                      list[activeImageIndex]?.desktop || list[activeImageIndex]?.mobile || String(activeImageIndex);
+                    failedKeys.current.add(key);
+                    if (list.length <= 1) return;
+
+                    const candidates: number[] = [];
+                    for (let i = 0; i < list.length; i++) {
+                      const k = list[i]?.desktop || list[i]?.mobile || String(i);
+                      if (!failedKeys.current.has(k)) candidates.push(i);
+                    }
+                    if (candidates.length === 0) return;
+                    const next = candidates[Math.floor(Math.random() * candidates.length)];
+                    setActiveImageIndex(next);
+                  }}
+                />
+              </picture>
+            </motion.div>
+          ) : null}
         </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-transparent" />
         <div className="grain-overlay" />
@@ -135,34 +183,38 @@ export function Hero() {
 
       <motion.div
         className="relative z-10 mx-auto max-w-5xl px-4 text-center"
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.12, delayChildren: 0.12 } },
-        }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: 'easeOut' }}
       >
         <motion.p
-          variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
           className="font-mono text-xs uppercase tracking-[0.5em] text-secondary"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.45, ease: 'easeOut' }}
         >
-          ZENTH / 2026
+          {heroKicker || `${brandName} ${new Date().getFullYear()}`}
         </motion.p>
-        <motion.h1
-          variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-          className="glitch-text font-display text-5xl uppercase leading-none text-accent sm:text-7xl md:text-8xl"
-        >
-          DEFINE THE STREET
+
+        <motion.h1 className="mt-4 font-display text-5xl uppercase leading-none text-accent sm:text-7xl md:text-8xl">
+          <AnimatedWords text={heroHeadline} className="glitch-text" />
         </motion.h1>
-        <motion.p
-          variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }}
-          className="mx-auto mt-6 max-w-xl font-sans text-sm text-muted md:text-base"
-        >
-          New Collection. Limited Drops. Zero Compromise.
-        </motion.p>
+
+        {heroTagline ? (
+          <motion.p
+            className="mx-auto mt-6 max-w-xl font-sans text-sm text-muted md:text-base"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.45, ease: 'easeOut' }}
+          >
+            {heroTagline}
+          </motion.p>
+        ) : null}
         <motion.div
-          variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
           className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.26, duration: 0.45, ease: 'easeOut' }}
         >
           <Link href="/products" data-magnetic>
             <Button variant="primary">SHOP NOW</Button>

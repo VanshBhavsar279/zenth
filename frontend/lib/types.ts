@@ -38,9 +38,18 @@ export interface ThemeSettings {
   logoUrl: string;
 }
 
+export interface HeroImagesSettings {
+  heroImagesMobile: string[];
+  heroImagesDesktop: string[];
+}
+
 export interface ContactInfo {
   _id?: string;
   brandName: string;
+  heroKicker: string;
+  heroHeadline: string;
+  heroTagline: string;
+  footerTagline: string;
   whatsappNumber: string;
   phone: string;
   email: string;

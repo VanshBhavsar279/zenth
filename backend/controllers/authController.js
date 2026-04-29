@@ -45,7 +45,7 @@ export const login = async (req, res, next) => {
 
     res.cookie('zenth_token', token, cookieOptions);
 
-    res.json({ message: 'Logged in', email: adminEmail });
+    res.json({ message: 'Logged in', email: adminEmail, token });
   } catch (err) {
     next(err);
   }
